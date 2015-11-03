@@ -53,10 +53,10 @@ object Config {
       conf.set("spark.logConf", "true")
       conf.set("spark.akka.logLifecycleEvents", "true")
       conf.set("spark.driver.allowMultipleContexts", "true")
-      //conf.set("spark.cassandra.connection.host", "localhost")
-      conf.set("spark.cassandra.connection.host", "192.168.10.200")
-      conf.set("spark.cassandra.auth.username", "cassandra")
-      conf.set("spark.cassandra.auth.password", "cassandra")
+      conf.set("spark.cassandra.connection.host", "localhost")
+      //conf.set("spark.cassandra.connection.host", "192.168.10.200")
+      //conf.set("spark.cassandra.auth.username", "cassandra")
+      //conf.set("spark.cassandra.auth.password", "cassandra")
 
     case "sandbox" => 
       println("===Running in sandbox mode===")
@@ -80,8 +80,7 @@ object Config {
       val driverHost = "10.10.10.100"
       conf.setAppName("Legacy User Profiles Migration")
       //conf.setMaster("yarn-client")
-      //conf.setMaster("local[*]")
-      conf.setMaster("spark://192.168.121.221:7077")
+      conf.setMaster("local[*]")
       conf.set("spark.logConf", "true")
       conf.set("spark.akka.logLifecycleEvents", "true")
       conf.set("spark.driver.allowMultipleContexts", "true")
@@ -100,7 +99,8 @@ object Config {
       val driverHost = "192.168.121.160"
       conf.setAppName("Legacy SocialGroup Migration")
       //conf.setMaster("yarn-client")
-      conf.setMaster("local[*]")
+      //conf.setMaster("local[*]")
+      conf.setMaster("spark://192.168.121.221:7077")
       conf.set("spark.logConf", "true")
       conf.set("spark.akka.logLifecycleEvents", "true")
       conf.set("spark.driver.allowMultipleContexts", "true")

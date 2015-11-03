@@ -120,7 +120,7 @@ object App extends App {
               commentCount, atmention, deleted, likeCount, location,
               tags, uriImage, url, urlthumbnail, viewCount)))
                 .saveToCassandra(s"$keyspace", "legacyblogposts", 
-                  SomeColumns("id", "blogpostid", "subject", "userid",
+                  SomeColumns("id", "blogpostid", "title", "userid",
                     "author", "jiveuserid", "permalink", "body",
                     "publishdate", "created_at", "updated_at",
                     "comment_count", "at_mention", "deleted", "like_count",
@@ -139,6 +139,7 @@ object App extends App {
     val keyspace = Config.cassandraConfig(mode, Some("keyspace"))
     val replicationStrategy = Config.cassandraConfig(mode, Some("replStrategy"))
     CassandraConnector(conf).withSessionDo { sess =>
+      sess.execute(s"DROP TABLE IF EXISTS $keyspace.legacyblogposts")
       sess.execute(s"CREATE KEYSPACE IF NOT EXISTS $keyspace WITH REPLICATION = $replicationStrategy")
       sess.execute(s"CREATE TABLE IF NOT EXISTS $keyspace.legacyblogposts ( " +
         "id timeuuid, " + 
@@ -146,7 +147,7 @@ object App extends App {
         "userid text, " + 
         "author text, " + 
         "jiveuserid bigint, " + 
-        "subject text, " + 
+        "title text, " + 
         "permalink text, " + 
         "body text, " + 
         "created_at timestamp, " + 
