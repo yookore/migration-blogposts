@@ -80,7 +80,8 @@ object Config {
       val driverHost = "10.10.10.100"
       conf.setAppName("Legacy User Profiles Migration")
       //conf.setMaster("yarn-client")
-      conf.setMaster("local[*]")
+      //conf.setMaster("local[*]")
+      conf.setMaster("spark://192.168.121.221:7077")
       conf.set("spark.logConf", "true")
       conf.set("spark.akka.logLifecycleEvents", "true")
       conf.set("spark.driver.allowMultipleContexts", "true")
