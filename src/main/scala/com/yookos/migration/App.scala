@@ -129,7 +129,7 @@ object App extends App {
                   )
                 )
         }
-        println("===Latest group cachedIndex=== " + cache.get("latest_legacy_blogpost_index").toInt)
+        println("===Latest blogpost cachedIndex=== " + cache.get("latest_legacy_blogpost_index").toInt)
     
   }
   
