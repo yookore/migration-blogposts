@@ -139,7 +139,7 @@ object App extends App {
     val keyspace = Config.cassandraConfig(mode, Some("keyspace"))
     val replicationStrategy = Config.cassandraConfig(mode, Some("replStrategy"))
     CassandraConnector(conf).withSessionDo { sess =>
-      sess.execute(s"DROP TABLE IF EXISTS $keyspace.legacyblogposts")
+      //sess.execute(s"DROP TABLE IF EXISTS $keyspace.legacyblogposts")
       sess.execute(s"CREATE KEYSPACE IF NOT EXISTS $keyspace WITH REPLICATION = $replicationStrategy")
       sess.execute(s"CREATE TABLE IF NOT EXISTS $keyspace.legacyblogposts ( " +
         "id timeuuid, " + 
