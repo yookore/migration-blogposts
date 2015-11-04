@@ -92,7 +92,8 @@ object App extends App {
       blogsDF("creationdate"), blogsDF("modificationdate"))
         .filter(f"userid = $userid%d").foreach {
           blogItem => 
-            val id = java.util.UUID.randomUUID()
+            //val id = java.util.UUID.randomUUID()
+            val id = com.datastax.driver.core.utils.UUIDs.timeBased()
             val blogpostid = Some(blogItem.getLong(0))
             val subject = blogItem.getString(1)
             val jiveuserid = Some(userid) // needed for legacy comments on status
@@ -104,12 +105,12 @@ object App extends App {
             val creationdate = blogItem.getLong(6)
             val modificationdate = blogItem.getLong(7)
             val commentCount = Some(0)
-            val atmention = Some(null)
+            val atmention = Seq[String]()
             val deleted = false
             val likeCount = Some(0)
             val location = Some(null)
-            val tags = Some[Seq[String]](null)
-            val uriImage = Some[Seq[java.util.UUID]](null)
+            val tags = Seq[String]()
+            val uriImage = Seq[java.util.UUID]()
             val url = Some(null)
             val urlthumbnail = Some(null)
             val viewCount = Some(0)
