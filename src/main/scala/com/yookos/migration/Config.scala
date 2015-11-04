@@ -97,10 +97,10 @@ object Config {
       println("===Running in beta mode===")
       val driverPort = 7077
       val driverHost = "192.168.121.160"
-      conf.setAppName("Legacy SocialGroup Migration")
+      conf.setAppName("Legacy BlogPost Migration")
       //conf.setMaster("yarn-client")
-      //conf.setMaster("local[*]")
-      conf.setMaster("spark://192.168.121.221:7077")
+      conf.setMaster("local[*]")
+      //conf.setMaster("spark://192.168.121.221:7077")
       conf.set("spark.logConf", "true")
       conf.set("spark.akka.logLifecycleEvents", "true")
       conf.set("spark.driver.allowMultipleContexts", "true")
