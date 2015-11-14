@@ -44,6 +44,11 @@ object App extends App {
 
   val system = SparkEnv.get.actorSystem
   
+  if (mode == "yarn") {
+    sc.addJar("hdfs:///user/hadoop-user/data/jars/postgresql-9.4-1200-jdbc41.jar")
+    sc.addJar("hdfs:///user/hadoop-user/data/jars/migration-blogposts-0.1-SNAPSHOT.jar")
+  }
+  
   createSchema(conf)
   
   implicit val formats = DefaultFormats
@@ -71,13 +76,18 @@ object App extends App {
     "url" -> Config.dataSourceUrl(mode, Some("legacy")),
     "dbtable" -> "jiveblogpost")
   )
+
+  val legacyblogs = blogsDF.select(
+      blogsDF("blogpostid"), blogsDF("subject"), blogsDF("userid"), 
+      blogsDF("permalink"), blogsDF("body"), blogsDF("publishdate"),
+      blogsDF("creationdate"), blogsDF("modificationdate"))
   
   val df = mappingsDF.select(mappingsDF("userid"), mappingsDF("yookoreid"), mappingsDF("username"))
 
   reduce(df)
   
-  def reduce(df: DataFrame) = {
-    df.collect().foreach(row => {
+  def reduce(mdf: DataFrame) = {
+    mdf.collect().foreach(row => {
       cachedIndex = cachedIndex + 1
       cache.set("latest_legacy_blogpost_index", cachedIndex.toString)
       val userid = row.getLong(0)
@@ -86,49 +96,45 @@ object App extends App {
   }
 
   def upsert(row: Row, userid: Long) = {
-    blogsDF.select(
-      blogsDF("blogpostid"), blogsDF("subject"), blogsDF("userid"), 
-      blogsDF("permalink"), blogsDF("body"), blogsDF("publishdate"),
-      blogsDF("creationdate"), blogsDF("modificationdate"))
-        .filter(f"userid = $userid%d").foreach {
-          blogItem => 
-            //val id = java.util.UUID.randomUUID()
-            val id = com.datastax.driver.core.utils.UUIDs.timeBased()
-            val blogpostid = Some(blogItem.getLong(0))
-            val subject = blogItem.getString(1)
-            val jiveuserid = Some(userid) // needed for legacy comments on status
-            val yookoreid = row.getString(1)
-            val author = row.getString(2) // same as username
-            val permalink = Some(blogItem.getString(3))
-            val body = blogItem.getString(4)
-            val publishdate = Some(blogItem.getLong(5))
-            val creationdate = blogItem.getLong(6)
-            val modificationdate = blogItem.getLong(7)
-            val commentCount = Some(0)
-            val atmention = Seq[String]()
-            val deleted = false
-            val likeCount = Some(0)
-            val location = Some(null)
-            val tags = Seq[String]()
-            val uriImage = Seq[java.util.UUID]()
-            val url = Some(null)
-            val urlthumbnail = Some(null)
-            val viewCount = Some(0)
+    legacyblogs.filter(f"userid = $userid%d").foreach {
+      blogItem => 
+        //val id = java.util.UUID.randomUUID()
+        val id = com.datastax.driver.core.utils.UUIDs.timeBased()
+        val blogpostid = Some(blogItem.getLong(0))
+        val subject = blogItem.getString(1)
+        val jiveuserid = Some(userid) // needed for legacy comments on status
+        val yookoreid = row.getString(1)
+        val author = row.getString(2) // same as username
+        val permalink = Some(blogItem.getString(3))
+        val body = blogItem.getString(4)
+        val publishdate = Some(blogItem.getLong(5))
+        val creationdate = blogItem.getLong(6)
+        val modificationdate = blogItem.getLong(7)
+        val commentCount = Some(0)
+        val atmention = Seq[String]()
+        val deleted = false
+        val likeCount = Some(0)
+        val location = Some(null)
+        val tags = Seq[String]()
+        val uriImage = Seq[java.util.UUID]()
+        val url = Some(null)
+        val urlthumbnail = Some(null)
+        val viewCount = Some(0)
 
-            sc.parallelize(Seq(BlogPost(
-              id, blogpostid, subject, yookoreid, author, jiveuserid, 
-              permalink, body, publishdate, creationdate, modificationdate,
-              commentCount, atmention, deleted, likeCount, location,
-              tags, uriImage, url, urlthumbnail, viewCount)))
-                .saveToCassandra(s"$keyspace", "legacyblogposts", 
-                  SomeColumns("id", "blogpostid", "title", "userid",
-                    "author", "jiveuserid", "permalink", "body",
-                    "publishdate", "created_at", "updated_at",
-                    "comment_count", "at_mention", "deleted", "like_count",
-                    "location", "tags", "uri_image", "url", "url_thumbnail",
-                    "view_count"
-                  )
-                )
+        sc.parallelize(Seq(BlogPost(
+          id, blogpostid, subject, yookoreid, author, jiveuserid, 
+          permalink, body, publishdate, creationdate, modificationdate,
+          commentCount, atmention, deleted, likeCount, location,
+          tags, uriImage, url, urlthumbnail, viewCount)))
+            .saveToCassandra(s"$keyspace", "legacyblogposts", 
+              SomeColumns("id", "blogpostid", "title", "userid",
+                "author", "jiveuserid", "permalink", "body",
+                "publishdate", "created_at", "updated_at",
+                "comment_count", "at_mention", "deleted", "like_count",
+                "location", "tags", "uri_image", "url", "url_thumbnail",
+                "view_count"
+              )
+            )
         }
         println("===Latest blogpost cachedIndex=== " + cache.get("latest_legacy_blogpost_index").toInt)
     
